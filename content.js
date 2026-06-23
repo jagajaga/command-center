@@ -558,7 +558,7 @@
     else open();
   }
 
-  // ---------- Message from background (Cmd+K / toolbar button) ----------
+  // ---------- Message from background (Cmd+Shift+M / toolbar button) ----------
 
   api.runtime.onMessage.addListener((msg) => {
     if (msg && msg.type === "toggle") {

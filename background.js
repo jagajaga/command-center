@@ -3,7 +3,7 @@
 
 const api = typeof browser !== "undefined" ? browser : chrome;
 
-// --- Trigger: keyboard command (Cmd+K) and toolbar button both toggle the palette ---
+// --- Trigger: keyboard command (Cmd+Shift+M) and toolbar button both toggle the palette ---
 
 api.commands.onCommand.addListener((command) => {
   if (command === "toggle-palette") togglePalette();
