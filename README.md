@@ -16,14 +16,17 @@
 ## Install
 
 - **[Firefox Add-ons (recommended)](https://addons.mozilla.org/firefox/addon/command-center/)** —
-  one-click install, auto-updates.
-  *(The public listing goes live once Mozilla approves the first release; until
-  then, use the source install below.)*
-- **From source (temporary):** open `about:debugging#/runtime/this-firefox` →
-  **Load Temporary Add-on…** → pick `manifest.json`. (Removed when Firefox
-  restarts — handy for testing.)
+  one-click install with automatic updates. *(Goes live once Mozilla approves
+  the first release.)*
+- **[Latest GitHub release](https://github.com/jagajaga/command-center/releases/latest)** —
+  download the signed `.xpi` and drag it onto a Firefox window (or `about:addons`
+  → ⚙️ → **Install Add-on From File…**). The Mozilla-signed build is attached to
+  each release once that version has been signed.
 
 Then press **Cmd+Shift+M** on any normal web page.
+
+> Building from source? See [Development](#development) for loading it
+> temporarily without signing.
 
 ## Usage
 
@@ -92,6 +95,10 @@ npx web-ext lint --source-dir . --self-hosted \
 # Run in a scratch Firefox profile with live reload
 npx web-ext run --source-dir .
 ```
+
+Or load it manually for a one-off test: `about:debugging#/runtime/this-firefox`
+→ **Load Temporary Add-on…** → pick `manifest.json` (removed when Firefox
+restarts, no signing needed).
 
 ## Releasing
 

@@ -1,0 +1,43 @@
+name: Attach signed XPI to release
+
+# Once Mozilla approves & signs a listed version, fetch that signed .xpi from the
+# public AMO API and attach it to the matching GitHub Release (vX.Y.Z), so the
+# "Latest GitHub release" install link offers an installable build.
+#
+# Runs daily (picks up approvals automatically) and on demand. Uses only public
+# AMO data — no secrets required.
+
+on:
+  workflow_dispatch:
+  schedule:
+    - cron: "17 7 * * *"
+
+permissions:
+  contents: write
+
+jobs:
+  attach:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Fetch approved build from AMO and attach to its release
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          GH_REPO: ${{ github.repository }}
+        run: |
+          set -euo pipefail
+          DATA=$(curl -sf "https://addons.mozilla.org/api/v5/addons/addon/command-center/") || {
+            echo "No public (approved) version on AMO yet — nothing to attach."; exit 0; }
+          VER=$(echo "$DATA" | node -e 'let s="";process.stdin.on("data",d=>s+=d).on("end",()=>{const j=JSON.parse(s);process.stdout.write(j.current_version?.version||"")})')
+          URL=$(echo "$DATA" | node -e 'let s="";process.stdin.on("data",d=>s+=d).on("end",()=>{const j=JSON.parse(s);process.stdout.write(j.current_version?.file?.url||"")})')
+          if [ -z "$VER" ] || [ -z "$URL" ]; then echo "No signed file available yet."; exit 0; fi
+          TAG="v$VER"
+          echo "Latest approved: $TAG -> $URL"
+          if gh release view "$TAG" --json assets -q '.assets[].name' 2>/dev/null | grep -q "command-center-$VER.xpi"; then
+            echo "Signed .xpi already attached to $TAG."; exit 0
+          fi
+          curl -sfL "$URL" -o "command-center-$VER.xpi"
+          if ! gh release view "$TAG" >/dev/null 2>&1; then
+            gh release create "$TAG" --title "Command Center $TAG" --generate-notes
+          fi
+          gh release upload "$TAG" "command-center-$VER.xpi" --clobber
+          echo "Attached command-center-$VER.xpi to $TAG."
