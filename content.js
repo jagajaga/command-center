@@ -55,11 +55,23 @@
     return score;
   }
 
+  // Multi-word queries: each whitespace-separated token must match somewhere in
+  // the title or the URL, independently. So "jagajaga coaurora" matches
+  // jagajaga.me/coaurora (no literal space between the words), and "git palette"
+  // matches a page with "git" in the title and "palette" in the URL.
   function bestScore(query, item) {
-    const t = fuzzyScore(query, item.title || "");
-    const u = fuzzyScore(query, item.url || "");
-    if (t < 0 && u < 0) return -1;
-    return Math.max(t, u) + (t >= 0 ? 2 : 0); // small nudge toward title hits
+    const q = (query || "").trim();
+    if (!q) return 0;
+    const title = item.title || "";
+    const url = item.url || "";
+    let total = 0;
+    for (const tok of q.split(/\s+/)) {
+      const t = fuzzyScore(tok, title);
+      const u = fuzzyScore(tok, url);
+      if (t < 0 && u < 0) return -1; // this token matched nothing → not a result
+      total += Math.max(t, u) + (t >= 0 ? 2 : 0); // nudge toward title hits
+    }
+    return total;
   }
 
   // ---------- URL / search helpers ----------
