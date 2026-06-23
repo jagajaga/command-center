@@ -41,8 +41,11 @@ jobs:
         env:
           WEB_EXT_API_KEY: ${{ secrets.AMO_JWT_ISSUER }}
           WEB_EXT_API_SECRET: ${{ secrets.AMO_JWT_SECRET }}
+        # --approval-timeout=0: upload for review and return immediately instead of
+        # blocking ~15 min waiting for a signed file. The attach-signed-xpi workflow
+        # fetches the signed .xpi once Mozilla approves the version.
         run: npx --yes web-ext sign --source-dir . --channel=listed
-          --amo-metadata=amo-metadata.json
+          --amo-metadata=amo-metadata.json --approval-timeout=0
           --ignore-files ".github/**" "docs/**" "*.md" "LICENSE" "amo-metadata.json"
 
       - name: Package source zip
