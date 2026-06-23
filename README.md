@@ -42,6 +42,18 @@ Then press **Cmd+Shift+M** on any normal web page.
 Looks-like-a-URL detection covers `example.com`, `localhost:3000`,
 `https://…`; anything else becomes a Google search.
 
+### Change the shortcut
+
+Prefer a different key? Firefox lets you rebind it to anything — no reinstall:
+
+1. Open **`about:addons`**
+2. Click the gear ⚙️ (top-right) → **Manage Extension Shortcuts**
+3. Find **Command Center → Open Command Center**, click the shortcut field, and
+   press your desired combo (e.g. <kbd>Cmd</kbd>+<kbd>K</kbd>, <kbd>Alt</kbd>+<kbd>Space</kbd>).
+
+If Firefox says the combo is already in use by a built-in shortcut, it'll warn
+you — pick another, or it'll override once accepted.
+
 ## Features
 
 - ⚡ **Tabs-first fuzzy ranking** — a subsequence scorer with bonuses for
@@ -78,8 +90,8 @@ permission from `manifest.json`; results fall back to a globe glyph.
 | `content.js` | Shadow-DOM overlay, fuzzy ranking, keyboard handling, rendering |
 | `icon.svg` | Toolbar / add-on icon |
 
-The keyboard shortcut isn't a built-in Firefox combo, so it should bind on
-install. To change it: `about:addons` → gear ⚙️ → **Manage Extension Shortcuts**.
+The keyboard shortcut isn't a built-in Firefox combo, so it binds on install;
+rebind it anytime (see [Change the shortcut](#change-the-shortcut)).
 
 > The overlay can't be injected on privileged pages Firefox blocks extensions
 > from (`about:*`, `addons.mozilla.org`, `view-source:`, the PDF viewer). The
