@@ -1,0 +1,80 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 720 430" width="720" height="430" font-family="-apple-system, BlinkMacSystemFont, 'Segoe UI', system-ui, sans-serif">
+  <defs>
+    <filter id="shadow" x="-30%" y="-30%" width="160%" height="160%">
+      <feDropShadow dx="0" dy="20" stdDeviation="26" flood-color="#000000" flood-opacity="0.45"/>
+    </filter>
+    <clipPath id="page"><rect x="0" y="0" width="720" height="430" rx="10"/></clipPath>
+  </defs>
+
+  <!-- Mock browser page behind the palette -->
+  <g clip-path="url(#page)">
+    <rect x="0" y="0" width="720" height="430" fill="#ffffff"/>
+    <rect x="0" y="0" width="720" height="46" fill="#e6e9ef"/>
+    <circle cx="24" cy="23" r="6" fill="#ff5f57"/>
+    <circle cx="44" cy="23" r="6" fill="#febc2e"/>
+    <circle cx="64" cy="23" r="6" fill="#28c840"/>
+    <rect x="92" y="12" width="540" height="22" rx="11" fill="#f6f7f9"/>
+    <text x="108" y="27" font-size="12" fill="#9aa0ab">github.com/jagajaga/command-center</text>
+    <!-- faint page content -->
+    <rect x="40" y="78" width="260" height="18" rx="5" fill="#eef0f4"/>
+    <rect x="40" y="116" width="640" height="10" rx="5" fill="#f1f3f6"/>
+    <rect x="40" y="138" width="600" height="10" rx="5" fill="#f1f3f6"/>
+    <rect x="40" y="160" width="620" height="10" rx="5" fill="#f1f3f6"/>
+    <rect x="40" y="182" width="560" height="10" rx="5" fill="#f1f3f6"/>
+    <rect x="40" y="300" width="640" height="10" rx="5" fill="#f1f3f6"/>
+    <rect x="40" y="322" width="500" height="10" rx="5" fill="#f1f3f6"/>
+    <!-- dim scrim -->
+    <rect x="0" y="0" width="720" height="430" fill="#0c0f16" opacity="0.45"/>
+  </g>
+
+  <!-- Command palette -->
+  <g filter="url(#shadow)">
+    <rect x="110" y="62" width="500" height="306" rx="14" fill="#1e1f26" stroke="#ffffff" stroke-opacity="0.08"/>
+  </g>
+
+  <!-- Search input -->
+  <text x="134" y="102" font-size="20" fill="#f4f4f7">git</text>
+  <rect x="156" y="86" width="2" height="22" fill="#3a6df0"/>
+  <line x1="110" y1="122" x2="610" y2="122" stroke="#ffffff" stroke-opacity="0.07"/>
+
+  <!-- Row 1 (selected) -->
+  <rect x="110" y="130" width="500" height="40" fill="#3a6df0"/>
+  <rect x="130" y="142" width="16" height="16" rx="4" fill="#ffffff"/>
+  <circle cx="138" cy="150" r="4.5" fill="#24292f"/>
+  <text x="158" y="148" font-size="13" fill="#ffffff">GitHub — jagajaga/command-center</text>
+  <text x="158" y="162" font-size="11" fill="#ffffff" fill-opacity="0.82">github.com/jagajaga/command-center</text>
+  <text x="590" y="155" font-size="11" fill="#ffffff" fill-opacity="0.82" text-anchor="end">Tab</text>
+
+  <!-- Row 2 -->
+  <rect x="130" y="182" width="16" height="16" rx="4" fill="#f05133"/>
+  <text x="158" y="188" font-size="13" fill="#e9e9ee">Git Reference Manual</text>
+  <text x="158" y="202" font-size="11" fill="#9a9ba6">git-scm.com/docs</text>
+  <text x="590" y="195" font-size="11" fill="#8a8b96" text-anchor="end">Tab</text>
+
+  <!-- Row 3 -->
+  <rect x="130" y="222" width="16" height="16" rx="4" fill="#f05133"/>
+  <text x="158" y="228" font-size="13" fill="#e9e9ee">Getting Started — Installing Git</text>
+  <text x="158" y="242" font-size="11" fill="#9a9ba6">git-scm.com/book</text>
+  <text x="590" y="235" font-size="11" fill="#8a8b96" text-anchor="end">History</text>
+
+  <!-- Row 4 -->
+  <rect x="130" y="262" width="16" height="16" rx="4" fill="#fc6d26"/>
+  <text x="158" y="268" font-size="13" fill="#e9e9ee">GitLab — The DevOps Platform</text>
+  <text x="158" y="282" font-size="11" fill="#9a9ba6">gitlab.com</text>
+  <text x="590" y="275" font-size="11" fill="#8a8b96" text-anchor="end">History</text>
+
+  <!-- Row 5 (Google fallback) -->
+  <g stroke="#b9bac4" stroke-width="1.6" fill="none">
+    <circle cx="137" cy="309" r="5.5"/>
+    <line x1="141.5" y1="313.5" x2="146" y2="318" stroke-linecap="round"/>
+  </g>
+  <text x="158" y="308" font-size="13" fill="#e9e9ee">Search Google for “git”</text>
+  <text x="158" y="322" font-size="11" fill="#9a9ba6">google.com</text>
+  <text x="590" y="315" font-size="11" fill="#8a8b96" text-anchor="end">↵</text>
+
+  <!-- Footer -->
+  <line x1="110" y1="338" x2="610" y2="338" stroke="#ffffff" stroke-opacity="0.07"/>
+  <text x="134" y="356" font-size="11" fill="#7d7e88">
+    <tspan fill="#b9bac4">↑↓</tspan> navigate   <tspan fill="#b9bac4">↵</tspan> open   <tspan fill="#b9bac4">⌘↵</tspan> Google / URL   <tspan fill="#b9bac4">esc</tspan> close
+  </text>
+</svg>

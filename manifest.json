@@ -1,0 +1,51 @@
+{
+  "manifest_version": 2,
+  "name": "Command Center",
+  "version": "1.0.2",
+  "description": "Spotlight-style command palette. Cmd+Shift+M to fuzzy-search open tabs and history, Cmd+Enter to Google search or open a URL.",
+  "icons": {
+    "48": "icon.svg",
+    "96": "icon.svg"
+  },
+  "permissions": [
+    "tabs",
+    "history",
+    "https://icons.duckduckgo.com/*"
+  ],
+  "background": {
+    "scripts": ["background.js"]
+  },
+  "content_scripts": [
+    {
+      "matches": ["<all_urls>"],
+      "js": ["content.js"],
+      "run_at": "document_idle",
+      "all_frames": false
+    }
+  ],
+  "browser_action": {
+    "default_icon": "icon.svg",
+    "default_title": "Open Command Center (Cmd+Shift+M)"
+  },
+  "commands": {
+    "toggle-palette": {
+      "suggested_key": {
+        "default": "Ctrl+Shift+M",
+        "mac": "Command+Shift+M"
+      },
+      "description": "Open Command Center"
+    }
+  },
+  "browser_specific_settings": {
+    "gecko": {
+      "id": "command-center@local",
+      "strict_min_version": "140.0",
+      "data_collection_permissions": {
+        "required": ["none"]
+      }
+    },
+    "gecko_android": {
+      "strict_min_version": "142.0"
+    }
+  }
+}

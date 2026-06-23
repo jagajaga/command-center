@@ -1,0 +1,59 @@
+name: Release
+
+# Push a tag like v1.0.3 (matching manifest.json's version) to cut a release:
+#   1. lint the extension
+#   2. submit the new version to addons.mozilla.org for review (listed channel)
+#   3. create a GitHub Release with auto-generated notes + a source zip
+#
+# Requires repo secrets AMO_JWT_ISSUER and AMO_JWT_SECRET (AMO API credentials).
+
+on:
+  push:
+    tags:
+      - "v*"
+
+permissions:
+  contents: write
+
+jobs:
+  release:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: "20"
+
+      - name: Check manifest version matches tag
+        run: |
+          MV=$(node -p "require('./manifest.json').version")
+          TV="${GITHUB_REF_NAME#v}"
+          echo "manifest=$MV tag=$TV"
+          test "$MV" = "$TV" || { echo "::error::manifest.json version ($MV) != tag ($TV)"; exit 1; }
+
+      - name: Lint
+        run: npx --yes web-ext lint --source-dir . --self-hosted
+          --ignore-files ".github/**" "docs/**" "*.md" "LICENSE"
+
+      - name: Submit to Firefox Add-ons (listed, for review)
+        continue-on-error: true
+        env:
+          WEB_EXT_API_KEY: ${{ secrets.AMO_JWT_ISSUER }}
+          WEB_EXT_API_SECRET: ${{ secrets.AMO_JWT_SECRET }}
+        run: npx --yes web-ext sign --source-dir . --channel=listed
+          --ignore-files ".github/**" "docs/**" "*.md" "LICENSE"
+
+      - name: Package source zip
+        run: |
+          zip -r "command-center-${GITHUB_REF_NAME}-source.zip" \
+            manifest.json background.js content.js icon.svg README.md LICENSE
+
+      - name: Create GitHub Release
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          gh release create "$GITHUB_REF_NAME" \
+            --title "Command Center ${GITHUB_REF_NAME}" \
+            --generate-notes \
+            "command-center-${GITHUB_REF_NAME}-source.zip"

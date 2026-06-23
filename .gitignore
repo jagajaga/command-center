@@ -1,0 +1,18 @@
+# Build artifacts
+dist/
+web-ext-artifacts/
+*.xpi
+*.zip
+
+# Secrets — never commit AMO API credentials
+*.env
+amo-credentials*
+
+# web-ext local state
+.amo-upload-uuid
+.web-extension-id
+
+# Tooling / OS
+node_modules/
+.claude/
+.DS_Store
