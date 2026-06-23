@@ -34,7 +34,7 @@ jobs:
 
       - name: Lint
         run: npx --yes web-ext lint --source-dir . --self-hosted
-          --ignore-files ".github/**" "docs/**" "*.md" "LICENSE"
+          --ignore-files ".github/**" "docs/**" "*.md" "LICENSE" "amo-metadata.json"
 
       - name: Submit to Firefox Add-ons (listed, for review)
         continue-on-error: true
@@ -42,18 +42,23 @@ jobs:
           WEB_EXT_API_KEY: ${{ secrets.AMO_JWT_ISSUER }}
           WEB_EXT_API_SECRET: ${{ secrets.AMO_JWT_SECRET }}
         run: npx --yes web-ext sign --source-dir . --channel=listed
-          --ignore-files ".github/**" "docs/**" "*.md" "LICENSE"
+          --amo-metadata=amo-metadata.json
+          --ignore-files ".github/**" "docs/**" "*.md" "LICENSE" "amo-metadata.json"
 
       - name: Package source zip
         run: |
           zip -r "command-center-${GITHUB_REF_NAME}-source.zip" \
             manifest.json background.js content.js icon.svg README.md LICENSE
 
-      - name: Create GitHub Release
+      - name: Create or update GitHub Release
         env:
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: |
-          gh release create "$GITHUB_REF_NAME" \
-            --title "Command Center ${GITHUB_REF_NAME}" \
-            --generate-notes \
-            "command-center-${GITHUB_REF_NAME}-source.zip"
+          ZIP="command-center-${GITHUB_REF_NAME}-source.zip"
+          if gh release view "$GITHUB_REF_NAME" >/dev/null 2>&1; then
+            gh release upload "$GITHUB_REF_NAME" "$ZIP" --clobber
+          else
+            gh release create "$GITHUB_REF_NAME" \
+              --title "Command Center ${GITHUB_REF_NAME}" \
+              --generate-notes "$ZIP"
+          fi
