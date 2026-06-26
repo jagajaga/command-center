@@ -1,6 +1,6 @@
 # Command Center
 
-> A Spotlight/Alfred-style command palette for Firefox. Press **Cmd+Shift+M**,
+> A Spotlight/Alfred-style command palette for Firefox. Press **Cmd+Shift+Space**,
 > fuzzy-search your open tabs and history, and jump — or hit **Cmd+Enter** to
 > Google-search or open a URL.
 
@@ -23,7 +23,7 @@
   → ⚙️ → **Install Add-on From File…**). The Mozilla-signed build is attached to
   each release once that version has been signed.
 
-Then press **Cmd+Shift+M** on any normal web page.
+Then press **Cmd+Shift+Space** on any normal web page.
 
 > Building from source? See [Development](#development) for loading it
 > temporarily without signing.
@@ -32,27 +32,28 @@ Then press **Cmd+Shift+M** on any normal web page.
 
 | Keys | Action |
 |------|--------|
-| **Cmd+Shift+M** (`Ctrl+Shift+M` on Win/Linux) | Open / close the palette |
+| **Cmd+Shift+Space** (`Ctrl+Shift+Space` on Win/Linux) | Open / close the palette |
 | *type* | Fuzzy-search open **tabs** first, then **history** |
 | **↑ / ↓** (or `Ctrl+P` / `Ctrl+N`) | Move selection |
 | **Enter** | Switch to the tab, or open the history/URL result in a new tab |
 | **Cmd+Enter** | Ignore the list — open what you typed as a URL, else Google it |
+| **Cmd+Backspace** (`Ctrl+Backspace`) / hover **×** | Close the highlighted tab |
 | **Esc** / click outside | Close |
 
 Looks-like-a-URL detection covers `example.com`, `localhost:3000`,
 `https://…`; anything else becomes a Google search.
 
-### Change the shortcut
+### Settings
 
-Prefer a different key? Firefox lets you rebind it to anything — no reinstall:
+Open the add-on's **Settings** (`about:addons` → **Extensions** → Command Center
+→ **Preferences/Settings**) to:
 
-1. Open **`about:addons`**
-2. Click the gear ⚙️ (top-right) → **Manage Extension Shortcuts**
-3. Find **Command Center → Open Command Center**, click the shortcut field, and
-   press your desired combo (e.g. <kbd>Cmd</kbd>+<kbd>K</kbd>, <kbd>Alt</kbd>+<kbd>Space</kbd>).
+- **Rebind the shortcut** to anything — click the field, press your combo, **Apply**.
+- **Set how many results** are shown (default **10**).
 
-If Firefox says the combo is already in use by a built-in shortcut, it'll warn
-you — pick another, or it'll override once accepted.
+You can also rebind from `about:addons` → gear ⚙️ → **Manage Extension Shortcuts**.
+If a combo is already used by a built-in Firefox shortcut, it'll be rejected —
+pick another (anything with <kbd>Ctrl</kbd>/<kbd>Alt</kbd>/<kbd>⌘</kbd>).
 
 ## Features
 
@@ -62,6 +63,8 @@ you — pick another, or it'll override once accepted.
 - 🔎 **History fallback**, de-duplicated against your open tabs.
 - 🌐 **Site icons** next to every result.
 - 🎯 **Cmd+Enter** to go straight to a Google search or URL.
+- ❌ **Close tabs** without leaving the palette — Cmd/Ctrl+Backspace or the hover ×.
+- ⚙️ **Settings page** — rebind the shortcut and choose how many results to show.
 - 🛡️ **Isolated overlay** — rendered in a Shadow DOM and grabs keystrokes at the
   `window` capture level, so the underlying page's shortcuts (e.g. GitHub's
   single-key hotkeys) never fire while it's open.
@@ -70,8 +73,9 @@ you — pick another, or it'll override once accepted.
 
 | Permission | Why |
 |------------|-----|
-| `tabs` | List and switch between your open tabs |
+| `tabs` | List, switch between, and close your open tabs |
 | `history` | Search your browsing history |
+| `storage` | Save your settings (shortcut display, result count) |
 | `<all_urls>` (content script) | Draw the overlay on any page |
 | `https://icons.duckduckgo.com/*` | Fetch favicons |
 
@@ -85,13 +89,14 @@ permission from `manifest.json`; results fall back to a globe glyph.
 
 | File | Role |
 |------|------|
-| `manifest.json` | Permissions, the Cmd+Shift+M command, content-script registration |
-| `background.js` | Privileged `tabs`/`history` APIs, tab switching/opening, favicon fetch + cache, relays the command to the active tab |
+| `manifest.json` | Permissions, the Cmd+Shift+Space command, content-script registration |
+| `background.js` | Privileged `tabs`/`history` APIs, tab switching/opening/closing, favicon fetch + cache, relays the command to the active tab |
 | `content.js` | Shadow-DOM overlay, fuzzy ranking, keyboard handling, rendering |
+| `options.html` / `options.js` | Settings page (shortcut rebinding via `commands.update`, result count in `storage`) |
 | `icon.svg` | Toolbar / add-on icon |
 
 The keyboard shortcut isn't a built-in Firefox combo, so it binds on install;
-rebind it anytime (see [Change the shortcut](#change-the-shortcut)).
+rebind it anytime (see [Settings](#settings)).
 
 > The overlay can't be injected on privileged pages Firefox blocks extensions
 > from (`about:*`, `addons.mozilla.org`, `view-source:`, the PDF viewer). The

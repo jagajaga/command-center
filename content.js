@@ -8,8 +8,18 @@
 
   const api = typeof browser !== "undefined" ? browser : chrome;
 
-  const MAX_TABS = 8;
-  const MAX_HISTORY = 7;
+  const DEFAULTS = { maxResults: 10 };
+  let maxResults = DEFAULTS.maxResults; // tabs + history cap (configurable in settings)
+
+  async function loadSettings() {
+    try {
+      const s = await api.storage.local.get(DEFAULTS);
+      const n = parseInt(s.maxResults, 10);
+      maxResults = Number.isFinite(n) ? Math.min(30, Math.max(1, n)) : DEFAULTS.maxResults;
+    } catch (e) {
+      maxResults = DEFAULTS.maxResults;
+    }
+  }
 
   let host, shadow, input, list, footer;
   let isOpen = false;
@@ -136,6 +146,8 @@
     '<svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="1.8"><circle cx="11" cy="11" r="7"/><path d="m20 20-3.2-3.2"/></svg>';
   const ICON_LINK =
     '<svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="1.6"><path d="M10 14a5 5 0 0 0 7 0l3-3a5 5 0 0 0-7-7l-1.5 1.5"/><path d="M14 10a5 5 0 0 0-7 0l-3 3a5 5 0 0 0 7 7l1.5-1.5"/></svg>';
+  const ICON_X =
+    '<svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M6 6l12 12M18 6L6 18"/></svg>';
 
   // Parse a static SVG string into a real node (no innerHTML — keeps the linter
   // happy and avoids any HTML-injection sink).
@@ -204,6 +216,18 @@
       badge.className = "cc-badge";
       badge.textContent = item.badge || "";
       row.appendChild(badge);
+
+      if (item.type === "tab") {
+        const closeBtn = document.createElement("button");
+        closeBtn.className = "cc-close";
+        closeBtn.title = "Close tab (⌘⌫)";
+        closeBtn.appendChild(svgIcon(ICON_X));
+        closeBtn.addEventListener("click", (ev) => {
+          ev.stopPropagation();
+          closeTabAt(i);
+        });
+        row.appendChild(closeBtn);
+      }
 
       row.addEventListener("mousemove", () => {
         if (selected !== i) {
@@ -281,7 +305,7 @@
           windowId: t.windowId,
           badge: "Tab"
         });
-        if (out.length >= MAX_TABS + MAX_HISTORY) break;
+        if (out.length >= maxResults) break;
       }
       return out;
     }
@@ -294,7 +318,7 @@
     }
     scoredTabs.sort((a, b) => b.s - a.s);
     const openUrls = new Set();
-    for (const { t } of scoredTabs.slice(0, MAX_TABS)) {
+    for (const { t } of scoredTabs.slice(0, maxResults)) {
       openUrls.add(t.url);
       out.push({
         type: "tab",
@@ -320,7 +344,8 @@
       }
     }
     scoredHist.sort((a, b) => b.s - a.s);
-    for (const { h } of scoredHist.slice(0, MAX_HISTORY)) {
+    const histSlots = Math.max(0, maxResults - out.length); // tabs already filled some
+    for (const { h } of scoredHist.slice(0, histSlots)) {
       out.push({
         type: "history",
         title: h.title || prettyUrl(h.url),
@@ -398,6 +423,22 @@
     api.runtime.sendMessage({ type: "openUrl", url, newTab: true });
   }
 
+  // Cmd/Ctrl+Backspace or the × button: close the tab at row i, keep the palette open.
+  async function closeTabAt(i) {
+    const item = results[i];
+    if (!item || item.type !== "tab") return;
+    try {
+      await api.runtime.sendMessage({ type: "closeTab", tabId: item.tabId });
+    } catch (e) {
+      return;
+    }
+    allTabs = allTabs.filter((t) => t.id !== item.tabId);
+    results.splice(i, 1);
+    selected = Math.max(0, Math.min(selected, results.length - 1));
+    render();
+    input.focus();
+  }
+
   // ---------- Keyboard ----------
   // Captured at the window level so the host page (e.g. GitHub's single-key
   // hotkeys) never sees keystrokes while the palette is open. We only act on our
@@ -427,6 +468,9 @@
       e.preventDefault();
       if (e.metaKey || e.ctrlKey) forceSearchOrUrl();
       else activate(results[selected]);
+    } else if (e.key === "Backspace" && (e.metaKey || e.ctrlKey)) {
+      e.preventDefault();
+      closeTabAt(selected);
     }
   }
 
@@ -462,16 +506,25 @@
     }
     .cc-input::placeholder { color: #8a8b96; }
     .cc-list {
-      max-height: 52vh; overflow-y: auto;
+      max-height: 62vh; overflow-y: auto;
       border-top: 1px solid rgba(255,255,255,0.06);
     }
     .cc-list:empty { display: none; }
     .cc-row {
       display: flex; align-items: center; gap: 12px;
-      padding: 10px 16px; cursor: pointer;
+      padding: 7px 16px; cursor: pointer;
     }
     .cc-row.cc-sel { background: #3a6df0; }
     .cc-row.cc-sel .cc-sub, .cc-row.cc-sel .cc-badge { color: rgba(255,255,255,0.82); }
+    .cc-close {
+      flex: 0 0 auto; margin-left: 2px; width: 22px; height: 22px; padding: 0;
+      display: none; align-items: center; justify-content: center;
+      border: none; border-radius: 6px; cursor: pointer;
+      background: transparent; color: #b9bac4;
+    }
+    .cc-row:hover .cc-close, .cc-row.cc-sel .cc-close { display: inline-flex; }
+    .cc-row.cc-sel .cc-close { color: rgba(255,255,255,0.9); }
+    .cc-close:hover { background: rgba(255,255,255,0.16); color: #fff; }
     .cc-icon {
       width: 20px; height: 20px; flex: 0 0 20px;
       display: flex; align-items: center; justify-content: center;
@@ -523,7 +576,7 @@
     footer.className = "cc-foot";
     footer.innerHTML =
       "<span><b>↑↓</b> navigate</span><span><b>↵</b> open</span>" +
-      "<span><b>⌘↵</b> Google / URL</span><span><b>esc</b> close</span>";
+      "<span><b>⌘↵</b> Google / URL</span><span><b>⌘⌫</b> close tab</span><span><b>esc</b> close</span>";
 
     panel.appendChild(input);
     panel.appendChild(list);
@@ -540,7 +593,7 @@
     (document.body || document.documentElement).appendChild(host);
     selected = 0;
     input.value = "";
-    await refreshTabs();
+    await Promise.all([refreshTabs(), loadSettings()]);
     if (!isOpen) return; // closed while awaiting
     recompute();
     requestAnimationFrame(() => input && input.focus());

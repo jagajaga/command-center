@@ -1,8 +1,8 @@
 {
   "manifest_version": 2,
   "name": "Command Center",
-  "version": "1.0.3",
-  "description": "Spotlight-style command palette. Cmd+Shift+M to fuzzy-search open tabs and history, Cmd+Enter to Google search or open a URL.",
+  "version": "1.0.4",
+  "description": "Spotlight-style command palette. Cmd+Shift+Space to fuzzy-search open tabs and history; Cmd+Enter to Google search or open a URL.",
   "icons": {
     "48": "icon.svg",
     "96": "icon.svg"
@@ -10,6 +10,7 @@
   "permissions": [
     "tabs",
     "history",
+    "storage",
     "https://icons.duckduckgo.com/*"
   ],
   "background": {
@@ -25,13 +26,17 @@
   ],
   "browser_action": {
     "default_icon": "icon.svg",
-    "default_title": "Open Command Center (Cmd+Shift+M)"
+    "default_title": "Open Command Center (Cmd+Shift+Space)"
+  },
+  "options_ui": {
+    "page": "options.html",
+    "open_in_tab": false
   },
   "commands": {
     "toggle-palette": {
       "suggested_key": {
-        "default": "Ctrl+Shift+M",
-        "mac": "Command+Shift+M"
+        "default": "Ctrl+Shift+Space",
+        "mac": "Command+Shift+Space"
       },
       "description": "Open Command Center"
     }

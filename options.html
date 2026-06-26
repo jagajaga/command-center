@@ -1,0 +1,103 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>Command Center — Settings</title>
+    <style>
+      :root {
+        --bg: #ffffff;
+        --fg: #1d1d24;
+        --muted: #6b6c78;
+        --card: #f6f7f9;
+        --border: #e2e4ea;
+        --accent: #3a6df0;
+        --ok: #1a7f37;
+        --err: #c5341d;
+      }
+      @media (prefers-color-scheme: dark) {
+        :root {
+          --bg: #1e1f26;
+          --fg: #e9e9ee;
+          --muted: #9a9ba6;
+          --card: #25262e;
+          --border: #34353f;
+          --accent: #5b86f5;
+          --ok: #4ac26b;
+          --err: #ff6b57;
+        }
+      }
+      * { box-sizing: border-box; }
+      body {
+        margin: 0;
+        padding: 16px 18px;
+        font: 14px/1.5 -apple-system, BlinkMacSystemFont, "Segoe UI", system-ui, sans-serif;
+        color: var(--fg);
+        background: var(--bg);
+        min-width: 360px;
+      }
+      h1 { font-size: 16px; margin: 0 0 14px; }
+      section {
+        background: var(--card);
+        border: 1px solid var(--border);
+        border-radius: 10px;
+        padding: 14px 16px;
+        margin-bottom: 14px;
+      }
+      h2 { font-size: 13px; text-transform: uppercase; letter-spacing: 0.04em; color: var(--muted); margin: 0 0 10px; }
+      .row { display: flex; gap: 8px; align-items: center; flex-wrap: wrap; }
+      code {
+        background: rgba(127, 127, 127, 0.16);
+        padding: 1px 6px; border-radius: 5px; font-size: 13px;
+      }
+      input[type="text"], input[type="number"] {
+        font: inherit; color: var(--fg);
+        background: var(--bg);
+        border: 1px solid var(--border); border-radius: 7px;
+        padding: 7px 10px; outline: none;
+      }
+      input:focus { border-color: var(--accent); }
+      #capture { flex: 1; min-width: 150px; cursor: pointer; }
+      #maxResults { width: 84px; }
+      button {
+        font: inherit; cursor: pointer;
+        border: 1px solid var(--accent); background: var(--accent); color: #fff;
+        padding: 7px 12px; border-radius: 7px;
+      }
+      button.secondary { background: transparent; color: var(--fg); border-color: var(--border); }
+      button:hover { filter: brightness(1.05); }
+      label { display: block; margin-bottom: 6px; }
+      .hint { color: var(--muted); font-size: 12px; margin: 8px 0 0; }
+      .msg { font-size: 12px; min-height: 16px; margin: 8px 0 0; }
+      .msg.ok { color: var(--ok); }
+      .msg.err { color: var(--err); }
+      a { color: var(--accent); }
+    </style>
+  </head>
+  <body>
+    <h1>Command Center</h1>
+
+    <section>
+      <h2>Keyboard shortcut</h2>
+      <p style="margin: 0 0 10px">Current: <code id="current">…</code></p>
+      <div class="row">
+        <input id="capture" type="text" readonly placeholder="Click here, then press keys…" />
+        <button id="apply">Apply</button>
+        <button id="reset" class="secondary">Reset to default</button>
+      </div>
+      <p id="shortcutMsg" class="msg"></p>
+      <p class="hint">Needs at least <code>Ctrl</code> / <code>Alt</code> / <code>⌘</code>. You can also rebind from
+        <code>about:addons</code> → ⚙ → Manage Extension Shortcuts.</p>
+    </section>
+
+    <section>
+      <h2>Results</h2>
+      <label for="maxResults">Maximum results shown</label>
+      <input id="maxResults" type="number" min="1" max="30" step="1" />
+      <p id="resultsMsg" class="msg"></p>
+      <p class="hint">Open tabs are shown first, then history fills the rest. Default 10.</p>
+    </section>
+
+    <script src="options.js"></script>
+  </body>
+</html>
