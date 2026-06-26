@@ -50,6 +50,7 @@ Open the add-on's **Settings** (`about:addons` → **Extensions** → Command Ce
 
 - **Rebind the shortcut** to anything — click the field, press your combo, **Apply**.
 - **Set how many results** are shown (default **10**).
+- **Remap the in-palette keys** — open/go-to result, Google/URL, and close-tab.
 
 You can also rebind from `about:addons` → gear ⚙️ → **Manage Extension Shortcuts**.
 If a combo is already used by a built-in Firefox shortcut, it'll be rejected —

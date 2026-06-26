@@ -1,7 +1,7 @@
 {
   "manifest_version": 2,
   "name": "Command Center",
-  "version": "1.0.4",
+  "version": "1.1.0",
   "description": "Spotlight-style command palette. Cmd+Shift+Space to fuzzy-search open tabs and history; Cmd+Enter to Google search or open a URL.",
   "icons": {
     "48": "icon.svg",

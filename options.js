@@ -121,8 +121,63 @@ async function wireMaxResults() {
   });
 }
 
+// ---- In-palette keys (stored, "Mod" = Ctrl/Cmd) ----
+
+const PALETTE_DEFAULTS = { keyOpen: "Enter", keyGoogle: "Mod+Enter", keyClose: "Mod+Backspace" };
+
+function paletteKeyName(e) {
+  if (e.key === " " || e.code === "Space") return "Space";
+  if (e.key.length === 1) return /[a-z]/i.test(e.key) ? e.key.toUpperCase() : e.key;
+  const ok = {
+    Enter: "Enter", Backspace: "Backspace", Delete: "Delete", Tab: "Tab",
+    ArrowUp: "Up", ArrowDown: "Down", ArrowLeft: "Left", ArrowRight: "Right",
+    Home: "Home", End: "End", PageUp: "PageUp", PageDown: "PageDown"
+  };
+  return ok[e.key] || null;
+}
+
+function formatPaletteKey(e) {
+  const key = paletteKeyName(e);
+  if (!key) return null; // modifier-only press
+  const mods = [];
+  if (e.ctrlKey || e.metaKey) mods.push("Mod");
+  if (e.altKey) mods.push("Alt");
+  if (e.shiftKey) mods.push("Shift");
+  return [...mods, key].join("+");
+}
+
+function prettyBinding(b) {
+  const m = { Mod: isMac ? "⌘" : "Ctrl", Alt: isMac ? "⌥" : "Alt", Shift: isMac ? "⇧" : "Shift",
+    Enter: "↵", Backspace: "⌫", Delete: "⌦", Space: "Space" };
+  const parts = b.split("+").map((p) => m[p] || p);
+  return isMac ? parts.join("") : parts.join("+");
+}
+
+async function wirePaletteKeys() {
+  const fields = ["keyOpen", "keyGoogle", "keyClose"];
+  const stored = await api.storage.local.get(PALETTE_DEFAULTS);
+  for (const id of fields) {
+    const el = $(id);
+    el.value = prettyBinding(stored[id]);
+    el.addEventListener("keydown", async (e) => {
+      e.preventDefault();
+      const b = formatPaletteKey(e);
+      if (!b) return;
+      el.value = prettyBinding(b);
+      await api.storage.local.set({ [id]: b });
+      flash($("keysMsg"), "Saved.", true);
+    });
+  }
+  $("keysReset").addEventListener("click", async () => {
+    await api.storage.local.set(PALETTE_DEFAULTS);
+    for (const id of fields) $(id).value = prettyBinding(PALETTE_DEFAULTS[id]);
+    flash($("keysMsg"), "Reset to defaults.", true);
+  });
+}
+
 document.addEventListener("DOMContentLoaded", () => {
   showCurrent();
   wireShortcut();
   wireMaxResults();
+  wirePaletteKeys();
 });

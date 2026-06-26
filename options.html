@@ -59,6 +59,9 @@
       input:focus { border-color: var(--accent); }
       #capture { flex: 1; min-width: 150px; cursor: pointer; }
       #maxResults { width: 84px; }
+      .krow { display: flex; align-items: center; justify-content: space-between; gap: 10px; margin-bottom: 8px; }
+      .krow label { margin: 0; color: var(--muted); }
+      .kcap { width: 150px; text-align: center; cursor: pointer; }
       button {
         font: inherit; cursor: pointer;
         border: 1px solid var(--accent); background: var(--accent); color: #fff;
@@ -96,6 +99,16 @@
       <input id="maxResults" type="number" min="1" max="30" step="1" />
       <p id="resultsMsg" class="msg"></p>
       <p class="hint">Open tabs are shown first, then history fills the rest. Default 10.</p>
+    </section>
+
+    <section>
+      <h2>Palette keys</h2>
+      <div class="krow"><label for="keyOpen">Open / go to result</label><input id="keyOpen" class="kcap" type="text" readonly /></div>
+      <div class="krow"><label for="keyGoogle">Google search / open URL</label><input id="keyGoogle" class="kcap" type="text" readonly /></div>
+      <div class="krow"><label for="keyClose">Close tab</label><input id="keyClose" class="kcap" type="text" readonly /></div>
+      <button id="keysReset" class="secondary">Reset palette keys</button>
+      <p id="keysMsg" class="msg"></p>
+      <p class="hint">Click a field and press the combo. <code>Mod</code> = <code>Ctrl</code> (Win/Linux) or <code>⌘</code> (macOS). These work inside the palette while it's open.</p>
     </section>
 
     <script src="options.js"></script>

@@ -8,17 +8,52 @@
 
   const api = typeof browser !== "undefined" ? browser : chrome;
 
-  const DEFAULTS = { maxResults: 10 };
-  let maxResults = DEFAULTS.maxResults; // tabs + history cap (configurable in settings)
+  const DEFAULTS = {
+    maxResults: 10,
+    keyOpen: "Enter",
+    keyGoogle: "Mod+Enter",
+    keyClose: "Mod+Backspace"
+  };
+  let settings = { ...DEFAULTS };
+  const isMac = navigator.platform.toUpperCase().includes("MAC");
 
   async function loadSettings() {
     try {
       const s = await api.storage.local.get(DEFAULTS);
       const n = parseInt(s.maxResults, 10);
-      maxResults = Number.isFinite(n) ? Math.min(30, Math.max(1, n)) : DEFAULTS.maxResults;
+      settings = {
+        maxResults: Number.isFinite(n) ? Math.min(30, Math.max(1, n)) : DEFAULTS.maxResults,
+        keyOpen: s.keyOpen || DEFAULTS.keyOpen,
+        keyGoogle: s.keyGoogle || DEFAULTS.keyGoogle,
+        keyClose: s.keyClose || DEFAULTS.keyClose
+      };
     } catch (e) {
-      maxResults = DEFAULTS.maxResults;
+      settings = { ...DEFAULTS };
     }
+  }
+
+  // In-palette key bindings are stored as strings like "Mod+Enter", where
+  // "Mod" = Ctrl on Win/Linux or Cmd on macOS. matchBinding compares a keydown.
+  function normEventKey(e) {
+    if (e.key === " " || e.code === "Space") return "Space";
+    if (e.key.length === 1) return /[a-z]/i.test(e.key) ? e.key.toUpperCase() : e.key;
+    const map = { ArrowUp: "Up", ArrowDown: "Down", ArrowLeft: "Left", ArrowRight: "Right" };
+    return map[e.key] || e.key; // Enter / Backspace / Delete kept verbatim
+  }
+  function matchBinding(e, binding) {
+    if (!binding) return false;
+    const parts = binding.split("+");
+    const key = parts.pop();
+    if ((e.ctrlKey || e.metaKey) !== parts.includes("Mod")) return false;
+    if (e.altKey !== parts.includes("Alt")) return false;
+    if (e.shiftKey !== parts.includes("Shift")) return false;
+    return normEventKey(e) === key;
+  }
+  function prettyBinding(b) {
+    const m = { Mod: isMac ? "⌘" : "Ctrl", Alt: isMac ? "⌥" : "Alt", Shift: isMac ? "⇧" : "Shift",
+      Enter: "↵", Backspace: "⌫", Delete: "⌦", Space: "Space" };
+    const parts = b.split("+").map((p) => m[p] || p);
+    return isMac ? parts.join("") : parts.join("+");
   }
 
   let host, shadow, input, list, footer;
@@ -220,7 +255,7 @@
       if (item.type === "tab") {
         const closeBtn = document.createElement("button");
         closeBtn.className = "cc-close";
-        closeBtn.title = "Close tab (⌘⌫)";
+        closeBtn.title = "Close tab (" + prettyBinding(settings.keyClose) + ")";
         closeBtn.appendChild(svgIcon(ICON_X));
         closeBtn.addEventListener("click", (ev) => {
           ev.stopPropagation();
@@ -305,7 +340,7 @@
           windowId: t.windowId,
           badge: "Tab"
         });
-        if (out.length >= maxResults) break;
+        if (out.length >= settings.maxResults) break;
       }
       return out;
     }
@@ -318,7 +353,7 @@
     }
     scoredTabs.sort((a, b) => b.s - a.s);
     const openUrls = new Set();
-    for (const { t } of scoredTabs.slice(0, maxResults)) {
+    for (const { t } of scoredTabs.slice(0, settings.maxResults)) {
       openUrls.add(t.url);
       out.push({
         type: "tab",
@@ -344,7 +379,7 @@
       }
     }
     scoredHist.sort((a, b) => b.s - a.s);
-    const histSlots = Math.max(0, maxResults - out.length); // tabs already filled some
+    const histSlots = Math.max(0, settings.maxResults - out.length); // tabs already filled some
     for (const { h } of scoredHist.slice(0, histSlots)) {
       out.push({
         type: "history",
@@ -400,6 +435,25 @@
   function clampSelection() {
     if (selected >= results.length) selected = results.length - 1;
     if (selected < 0) selected = 0;
+  }
+
+  function footHint(keyText, label) {
+    const span = document.createElement("span");
+    const b = document.createElement("b");
+    b.textContent = keyText;
+    span.appendChild(b);
+    span.appendChild(document.createTextNode(" " + label));
+    return span;
+  }
+
+  function updateFooter() {
+    if (!footer) return;
+    footer.textContent = "";
+    footer.appendChild(footHint("↑↓", "navigate"));
+    footer.appendChild(footHint(prettyBinding(settings.keyOpen), "open"));
+    footer.appendChild(footHint(prettyBinding(settings.keyGoogle), "Google / URL"));
+    footer.appendChild(footHint(prettyBinding(settings.keyClose), "close tab"));
+    footer.appendChild(footHint("esc", "close"));
   }
 
   // ---------- Actions ----------
@@ -464,13 +518,15 @@
       e.preventDefault();
       selected = Math.max(selected - 1, 0);
       paintSelection();
-    } else if (e.key === "Enter") {
+    } else if (matchBinding(e, settings.keyGoogle)) {
       e.preventDefault();
-      if (e.metaKey || e.ctrlKey) forceSearchOrUrl();
-      else activate(results[selected]);
-    } else if (e.key === "Backspace" && (e.metaKey || e.ctrlKey)) {
+      forceSearchOrUrl();
+    } else if (matchBinding(e, settings.keyClose)) {
       e.preventDefault();
       closeTabAt(selected);
+    } else if (matchBinding(e, settings.keyOpen)) {
+      e.preventDefault();
+      activate(results[selected]);
     }
   }
 
@@ -574,9 +630,6 @@
 
     footer = document.createElement("div");
     footer.className = "cc-foot";
-    footer.innerHTML =
-      "<span><b>↑↓</b> navigate</span><span><b>↵</b> open</span>" +
-      "<span><b>⌘↵</b> Google / URL</span><span><b>⌘⌫</b> close tab</span><span><b>esc</b> close</span>";
 
     panel.appendChild(input);
     panel.appendChild(list);
@@ -595,6 +648,7 @@
     input.value = "";
     await Promise.all([refreshTabs(), loadSettings()]);
     if (!isOpen) return; // closed while awaiting
+    updateFooter();
     recompute();
     requestAnimationFrame(() => input && input.focus());
   }
